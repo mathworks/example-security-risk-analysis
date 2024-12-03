@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<MF0 version="1.1" packageUris="http://schema.mathworks.com/mf0/faultinfo_datamodel/R2021a">
+  <faultinfo.FailureModeContainer type="faultinfo.FailureModeContainer" uuid="bb661df2-14a1-4c8b-a1af-5d0c31960b9e">
+    <failureModes type="faultinfo.FailureMode" uuid="f8d7b1d2-0444-421b-a517-9dcd95a2cc72">
+      <ID>1</ID>
+      <associatedFaults type="faultinfo.ZCFault" uuid="0292a2e3-980d-4c54-b59a-2769bdf6277d"/>
+      <faultSubsystemName>positionfault</faultSubsystemName>
+      <resyncUUID>00000000-0000-0000-0000-000000000000</resyncUUID>
+    </failureModes>
+    <failureModes type="faultinfo.FailureMode" uuid="e1b822bc-bb07-4bf8-9a1e-2e462eba4542">
+      <ID>6</ID>
+      <associatedFaults type="faultinfo.ZCFault" uuid="80163b39-a6da-4291-b611-27a1a9029f8e"/>
+      <faultSubsystemName>stuck_steering</faultSubsystemName>
+      <resyncUUID>00000000-0000-0000-0000-000000000000</resyncUUID>
+    </failureModes>
+    <faultModelName>WareHouseTaskRobotSimulationModel_FaultModel</faultModelName>
+    <faultModelUUID>22c3369b-818a-4c95-86c2-ab34154fa57a</faultModelUUID>
+  </faultinfo.FailureModeContainer>
+  <faultinfo.FaultContainerSet type="faultinfo.FaultContainerSet" uuid="6300adf0-8721-4439-91c4-6d33800289cd">
+    <conditionals type="faultinfo.conditional.Conditional" uuid="302e52a6-0594-42b2-b406-945061b818e7">
+      <checksum>24c86f7c-230e-413b-b915-ba9bf1cc862a</checksum>
+      <condition>x &gt; 0</condition>
+      <mustBeLogged>true</mustBeLogged>
+      <name>EmergencyBrakeActive</name>
+      <resyncRefBlkID></resyncRefBlkID>
+      <resyncUUID>00000000-0000-0000-0000-000000000000</resyncUUID>
+      <symbols type="faultinfo.conditional.ModelElementSymbol" uuid="e650b656-8690-498c-ac97-4ae499cc4640">
+        <modelElementID>Outport|WareHouseTaskRobotSimulationModel:3:175|1</modelElementID>
+        <modelElementName>WareHouseTaskRobotSimulationModel/Robot Software Architecture/Control/Emergency Break/Outport/1</modelElementName>
+        <name>x</name>
+      </symbols>
+    </conditionals>
+    <faultContainers type="faultinfo.FaultContainer" uuid="3755cdc5-05c6-4dde-a30b-df44421d7387">
+      <activeFault type="faultinfo.ZCFault" uuid="0292a2e3-980d-4c54-b59a-2769bdf6277d"/>
+      <faultedEntityID>Outport|WareHouseTaskRobotSimulationModel:3:148|1</faultedEntityID>
+      <faultedEntityName>WareHouseTaskRobotSimulationModel/Robot Sofware Architecture/Position Sensor/Outport/1</faultedEntityName>
+      <faults type="faultinfo.ZCFault" uuid="0292a2e3-980d-4c54-b59a-2769bdf6277d">
+        <checksum>b3238c07-442c-4aa4-b49b-a6e7276e6c89</checksum>
+        <faultDescription></faultDescription>
+        <faultName>position_fault</faultName>
+        <resyncUUID>00000000-0000-0000-0000-000000000000</resyncUUID>
+        <triggerOn type="faultinfo.TimedTrigger" uuid="d0179e05-a0aa-4619-9ee7-bcbaaf22036a">
+          <startTime>5.0</startTime>
+          <isPersistent>true</isPersistent>
+        </triggerOn>
+      </faults>
+      <isEnabled>false</isEnabled>
+    </faultContainers>
+    <faultContainers type="faultinfo.FaultContainer" uuid="8147e692-9f15-4e02-954e-ba48cf725136">
+      <activeFault type="faultinfo.ZCFault" uuid="80163b39-a6da-4291-b611-27a1a9029f8e"/>
+      <faultedEntityID>Outport|WareHouseTaskRobotSimulationModel:34|1</faultedEntityID>
+      <faultedEntityName>WareHouseTaskRobotSimulationModel/Robot Plant/Kinematic Model/Bus Element In2/Outport/1</faultedEntityName>
+      <faults type="faultinfo.ZCFault" uuid="80163b39-a6da-4291-b611-27a1a9029f8e">
+        <checksum>00000000-0000-0000-0000-000000000000</checksum>
+        <faultDescription></faultDescription>
+        <faultName>stuck_steering</faultName>
+        <resyncUUID>00000000-0000-0000-0000-000000000000</resyncUUID>
+        <triggerOn type="faultinfo.TimedTrigger" uuid="54381d03-337d-4e7b-93f0-9489e22bbc0c">
+          <startTime>5.0</startTime>
+          <isPersistent>true</isPersistent>
+        </triggerOn>
+      </faults>
+      <isEnabled>false</isEnabled>
+    </faultContainers>
+    <isEnabled>true</isEnabled>
+    <lastUpdatedAt>2024-11-05T11:47:37</lastUpdatedAt>
+    <modelName>WareHouseTaskRobotSimulationModel</modelName>
+    <modelUUID>1a36480d-c7f1-4f57-931b-500b9769f0ba</modelUUID>
+  </faultinfo.FaultContainerSet>
+</MF0>

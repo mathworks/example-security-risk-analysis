@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Info File="99 Scripts/openTutorial.m" GroupUUID="default" Icon="" Name="openTutorial" Type="StartUp" Visible="1">
+    <Extension Name="StartUpPrev" Value="HEAD"/>
+</Info>

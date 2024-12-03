@@ -1,0 +1,212 @@
+<html>
+  <head>
+    <title>D3 DiGraph Test</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script type="text/javascript" src="d3.min.js"></script>
+    <style>
+      body {
+        background: white;
+        font-family: Verdana, Geneva, Tahoma, sans-serif;
+        font-weight: lighter;
+      }
+      #message {
+        position: absolute;
+        margin: 0.1em;
+        padding: 0.25em;
+        font-size: x-small;
+        border: 1px solid #aaa;
+        z-index: 10;
+        background: #FFFAF0;
+      }
+      #svg-container {
+        display: inline-block;
+        position: relative;
+        width: 100%;
+        padding-bottom: 100%;
+        vertical-align: top;
+        overflow: hidden;
+      }
+      .svg-content {
+        display: inline-block;
+        position: absolute;
+        top: 0;
+        left: 0;
+      }
+      </style>
+  </head>
+<body>
+<div id="message">Use MATLAB to view this!</div>
+<div id="svg-container"><svg></svg></div>
+<script>
+
+var MATLAB;
+// called by MATLAB; provides the interface
+function setup(htmlComponent) {
+  document.getElementById("message").innerHTML = "Waiting for data from MATLAB";
+  d3.selectAll("svg > *").remove();
+  htmlComponent.addEventListener("DataChanged", dataChanged);
+  MATLAB = htmlComponent;
+}
+
+function dataChanged(event) {
+  // called by MATLAB; provides (new) data
+  // expecting JSON {'nodes': [], 'edges': []}
+  document.getElementById("message").innerHTML = "Updating...";
+  makeGraph(JSON.parse(MATLAB.Data));
+  document.getElementById("message").innerHTML = "";
+}
+
+function makeGraph(data) {
+  /*
+   * data.nodes[] properties used for rendering:
+   *  - id: unique identifier
+   *  - label: shown on canvas as node text
+   *  - group: used to color
+   *  - details: used as tooltip
+   *  - focus: current/highlighted node
+   *  - err: highlight that node has an issue
+   *  - cmd: code for MATLAB when node is clicked
+   * data.edges[] properties:
+   *  - source/target: node ids
+   *  - err: highlight as issue
+   *  - weight: line width
+   */
+  const links = data.edges.map(d => Object.create(d));
+  const nodes = data.nodes.map(d => Object.create(d));
+  const groups = new Set(nodes.map(d => d.group));
+  const ntypes = Array.from(groups);
+  const ncolor = d3.scaleOrdinal(ntypes, d3.schemeCategory10) // assign color to groups
+
+  d3.selectAll("svg > *").remove();
+  var svg = d3.select("svg")
+    
+  // actual size does not matter, since it is scaled to fit
+  const width = 800;
+  const height = 600;
+
+  svg
+    .classed("svg-content", true)
+    .attr("viewBox", [-width/2, -height/2, width, height])
+    .attr("preserveAspectRatio", "xMidYMid meet")
+    .call(d3.zoom().on("zoom", handleZoom));
+
+  var canvas = svg.append("g")
+    .attr("type", "canvas");
+  
+  const loading = svg.append("text")
+      .attr("dy", "0.35em")
+      .attr("text-anchor", "middle")
+      .attr("font-size", 10)
+      .text("Rendering. One moment please...");
+  
+  // layouting through simulation
+  var simulation = d3.forceSimulation(nodes)
+      .force("charge", d3.forceManyBody().strength(-500))
+      .force("link", d3.forceLink(links).id(d => d.id)
+        .distance(90).strength(1).iterations(20))
+      .force("x", d3.forceX())
+      .force("y", d3.forceY())
+      .stop();
+  // run simulation to end
+  simulation.tick(Math.ceil(Math.log(simulation.alphaMin()) / Math.log(1 - simulation.alphaDecay())));  
+  loading.remove();
+
+  // draw links
+  var svglinks = // array of <line>
+    canvas.append("g")
+      .attr("type", "links")
+      .attr("stroke-linecap", "round")
+      .attr("stroke-width", 2)
+    .selectAll("line") // get all elements "line" from container. Returns empty here
+    .data(links) // join data creates three selections: enter/update/exit
+    .enter().append("line") // create one "line" for each new data element in the parent
+      .attr("stroke", function(d) { return d.err ? "#f00" : "#ddd"; })  
+      .attr("stroke-width", function(d) { return d.weight ? d.weight : 2; })
+      .attr("x1", function(d) { return d.source.x; })
+      .attr("y1", function(d) { return d.source.y; })
+      .attr("x2", function(d) { return d.target.x; })
+      .attr("y2", function(d) { return d.target.y; })
+      .on('click', function(e, d) {
+        console.log(d);
+        MATLAB.sendEventToMATLAB("edge", d);
+      })
+  
+  // draw nodes
+  var svgnodes = // array of g
+    canvas.append("g")
+      .attr("type", "nodes")
+      .attr("stroke-width", 1)
+    .selectAll('g.node')
+    .data(nodes)
+    .enter().append("g")
+      .attr("class", "node")
+
+  svgnodes.selectAll("path")
+    .data(nodes)
+    .enter().append("path")
+      .attr('transform', d => 'translate('+d.x+','+d.y+')')
+      .attr('d', d3.symbol() // shape depends on data:
+                  .size(d => d.size ? 40*d.size : 40)
+                  .type(d => d.focus ? d3.symbolTriangle : d3.symbolCircle))
+      .attr('fill-opacity', .1)
+      .attr('stroke', "#fff")
+      .attr('fill', d => ncolor(d.group))
+      .on('click', node_mouseclick)
+      .on("mouseout", node_mouseout)
+      .on("mouseover", node_mouseover)
+      
+  svgnodes.selectAll("text")
+    .data(nodes)
+    .enter().append("text")
+      .attr("fill", d => (d.err ? "red" : "black"))
+      .attr("x", d => d.x )
+      .attr("y", d => d.y+10)
+      //.style("pointer-events", "none")
+      .attr("font-size", "6pt")
+      .attr("text-anchor", "middle")
+      .text(function(d) {
+        var lbl = d.label ? d.label : d.id;
+        if (d.err) lbl += "??";
+        return lbl;
+      })
+      .on('click', node_mouseclick)
+      .on("mouseover", node_mouseover)
+      .on("mouseout", node_mouseout)
+
+  // callbacks
+  function node_mouseout(e,d) {
+    d3.select(this)
+      .style("cursor", "default"); 
+    message.style("visibility", "hidden");
+  }
+  function node_mouseover(e,d) {
+    if (d.cmd) // hand cursor:
+      d3.select(this).style("cursor", "pointer"); 
+    if (d.details) // tooltip:
+      message.text(d.details).style("visibility", "visible");
+  }
+  function node_mouseclick(e,d) {
+    console.log(d);
+    data = {id: d.id, cmd: d.cmd};  // FIXME: return object, instead of hardcoding stuff here
+    data.keyShift = e.shiftKey;
+    data.keyCtrl = e.ctrlKey;
+    console.log(data);
+    MATLAB.sendEventToMATLAB("node", JSON.stringify(data));
+  }
+  function handleZoom(e) {
+    d3.select('svg g').attr('transform', e.transform);
+  }
+
+  var message = d3.select("div#message")
+}
+
+//TEST data. Will be shown when this HTML file is loaded outside of MATLAB.
+const data = {"nodes":
+                [{"id":"Microsoft", "details": "software giant", "group": "software"},{"id":"Amazon", "focus": true, "size": 2, "cmd": "foo()", "details": "jeff"},{"id":"HTC", "err": true, "details": "phones and stuff", "cmd":"bar()"},{"id":"Samsung"},{"id":"Apple"},{"id":"Motorola"},{"id":"Nokia"},{"id":"Kodak"},{"id":"Barnes & Noble"},{"id":"Foxconn"},{"id":"Oracle"},{"id":"Google"},{"id":"Inventec"},{"id":"LG"},{"id":"RIM"},{"id":"Sony"},{"id":"Qualcomm"},{"id":"Huawei"},{"id":"ZTE"},{"id":"Ericsson"}],
+              "edges":
+                [{"source":"Microsoft","target":"Amazon","type":"licensing"},{"source":"Microsoft","target":"HTC","type":"licensing", "err": "true"},{"source":"Samsung","target":"Apple","type":"suit"},{"source":"Motorola","target":"Apple","type":"suit"},{"source":"Nokia","target":"Apple","type":"resolved"},{"source":"HTC","target":"Apple","type":"suit"},{"source":"Kodak","target":"Apple","type":"suit"},{"source":"Microsoft","target":"Barnes & Noble","type":"suit"},{"source":"Microsoft","target":"Foxconn","type":"suit"},{"source":"Oracle","target":"Google","type":"suit"},{"source":"Apple","target":"HTC","type":"suit"},{"source":"Microsoft","target":"Inventec","type":"suit"},{"source":"Samsung","target":"Kodak","type":"resolved"},{"source":"LG","target":"Kodak","type":"resolved"},{"source":"RIM","target":"Kodak","type":"suit"},{"source":"Sony","target":"LG","type":"suit"},{"source":"Kodak","target":"LG","type":"resolved"},{"source":"Apple","target":"Nokia","type":"resolved"},{"source":"Qualcomm","target":"Nokia","type":"resolved"},{"source":"Apple","target":"Motorola","type":"suit"},{"source":"Microsoft","target":"Motorola","type":"suit"},{"source":"Motorola","target":"Microsoft","type":"suit"},{"source":"Huawei","target":"ZTE","type":"suit"},{"source":"Ericsson","target":"ZTE","type":"suit"},{"source":"Kodak","target":"Samsung","type":"resolved"},{"source":"Apple","target":"Samsung","type":"suit"},{"source":"Kodak","target":"RIM","type":"suit"},{"source":"Nokia","target":"Qualcomm","type":"suit"}]};
+makeGraph(data);
+
+</script>
+</body>
+</html>
