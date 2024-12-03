@@ -1,5 +1,5 @@
 # Example of Security Threat and Risk Analysis with MATLAB and Simulink
-[![Open in MATLAB Online](https://www.mathworks.com/images/responsive/global/open-in-matlab-online.svg)](https://matlab.mathworks.com/open/github/v1?repo=cannyp3/example-security-risk-analysis&project=Robot.prj)
+[![Open in MATLAB Online](https://www.mathworks.com/images/responsive/global/open-in-matlab-online.svg)](https://matlab.mathworks.com/open/github/v1?repo=mathworks/example-security-risk-analysis&project=Robot.prj)
 
 This project demonstrates a simplified model-based security threat and risk analysis in MATLAB&reg; and Simulink&reg;.
 
@@ -47,7 +47,7 @@ The following products are needed in order for this example to function correctl
  * Navigation Toolbox&trade;
 
 ## Usage
-[![Open in MATLAB Online](https://www.mathworks.com/images/responsive/global/open-in-matlab-online.svg)](https://matlab.mathworks.com/open/github/v1?repo=cannyp3/example-security-risk-analysis&project=Robot.prj)
+[![Open in MATLAB Online](https://www.mathworks.com/images/responsive/global/open-in-matlab-online.svg)](https://matlab.mathworks.com/open/github/v1?repo=mathworks/example-security-risk-analysis&project=Robot.prj)
 
 To get started, open the project `Robot.prj`. If the live script did not open yet, click "openTutorial" in the project shortcuts, or open `doc/Tutorial.mlx`.
 
